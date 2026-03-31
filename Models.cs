@@ -8,7 +8,7 @@ namespace RequestManagerApp
     {
         public int Id { get; set; }
         public string Username { get; set; } // Логин
-        public string Password { get; set; } // Пароль (в реальных проектах нужно хэшировать!)
+        public string Password { get; set; } // Пароль
         public string Name { get; set; }     // ФИО
         public string Role { get; set; }     // "Admin" или "User"
     }
