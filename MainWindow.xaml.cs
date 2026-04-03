@@ -283,70 +283,67 @@ namespace RequestManagerApp
 
             try
             {
-                var grouped = exportData.GroupBy(r => r.WorkType);
-
                 using (var wb = new XLWorkbook())
                 {
                     var ws = wb.Worksheets.Add("Акты");
                     int row = 1;
 
-                    foreach (var group in grouped)
+                    string[] headers = { "№ Заявки", "Объект", "Наименование работы", "Срок(дн)", "Кол-во", "Статус", "Дата создания" };
+                    for (int i = 0; i < headers.Length; i++)
                     {
-                        ws.Cell(row, 1).Value = $"Группа работ: {group.Key}";
-                        ws.Cell(row, 1).Style.Font.Bold = true;
-                        ws.Cell(row, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
-                        ws.Range(row, 1, row, 7).Merge();
-                        row++;
+                        var cell = ws.Cell(row, i + 1);
+                        cell.Value = headers[i];
+                        cell.Style.Font.Bold = true;
+                        cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    }
+                    row++;
 
-                        string[] headers = { "№ Заявки", "Объект", "Наименование работы", "Срок(дн)", "Кол-во", "Статус", "Дата создания" };
-                        for (int i = 0; i < headers.Length; i++)
+                    int totalQuantity = 0;
+
+                    foreach (var r in exportData)
+                    {
+                        ws.Cell(row, 1).Value = r.Id;
+                        ws.Cell(row, 2).Value = r.Facility.Name;
+                        ws.Cell(row, 3).Value = r.ServiceName;
+                        ws.Cell(row, 4).Value = r.DeadlineDays;
+                        ws.Cell(row, 5).Value = r.Quantity;
+                        ws.Cell(row, 6).Value = r.Status;
+                        ws.Cell(row, 7).Value = r.FormattedDate;
+
+                        for (int i = 1; i <= 7; i++)
                         {
-                            ws.Cell(row, i + 1).Value = headers[i];
-                            ws.Cell(row, i + 1).Style.Font.Bold = true;
-                            ws.Cell(row, i + 1).Style.Border.BottomBorder = XLBorderStyleValues.Thin;
-                        }
-                        row++;
-
-                        int groupTotalQuantity = 0;
-
-                        foreach (var r in group)
-                        {
-                            ws.Cell(row, 1).Value = r.Id;
-                            ws.Cell(row, 2).Value = r.Facility.Name;
-                            ws.Cell(row, 3).Value = r.ServiceName;
-                            ws.Cell(row, 4).Value = r.DeadlineDays;
-                            ws.Cell(row, 5).Value = r.Quantity;
-                            ws.Cell(row, 6).Value = r.Status;
-                            ws.Cell(row, 7).Value = r.FormattedDate;
-
-                            groupTotalQuantity += r.Quantity;
-                            row++;
+                            ws.Cell(row, i).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                         }
 
-                        ws.Cell(row, 1).Value = $"{group.Key} итого";
-                        ws.Range(row, 1, row, 4).Merge();
-                        ws.Cell(row, 1).Style.Font.Bold = true;
-                        ws.Cell(row, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
-                        ws.Cell(row, 1).Style.Border.TopBorder = XLBorderStyleValues.Medium;
-                        ws.Cell(row, 1).Style.Border.BottomBorder = XLBorderStyleValues.Medium;
-
-                        ws.Cell(row, 5).Value = groupTotalQuantity;
-                        ws.Cell(row, 5).Style.Font.Bold = true;
-                        ws.Cell(row, 5).Style.Border.TopBorder = XLBorderStyleValues.Medium;
-                        ws.Cell(row, 5).Style.Border.BottomBorder = XLBorderStyleValues.Medium;
-
-                        ws.Range(row, 6, row, 7).Style.Border.TopBorder = XLBorderStyleValues.Medium;
-                        ws.Range(row, 6, row, 7).Style.Border.BottomBorder = XLBorderStyleValues.Medium;
-
-                        row += 2;
+                        totalQuantity += r.Quantity;
+                        row++;
                     }
 
+                    var totalTextRange = ws.Range(row, 1, row, 4);
+                    totalTextRange.Merge();
+                    totalTextRange.Value = "итого";
+                    totalTextRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                    totalTextRange.Style.Font.Bold = true;
+                    totalTextRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    var sumCell = ws.Cell(row, 5);
+                    sumCell.Value = totalQuantity;
+                    sumCell.Style.Font.Bold = true;
+                    sumCell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                    ws.Cell(row, 6).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    ws.Cell(row, 7).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
                     ws.Columns().AdjustToContents();
+
                     wb.SaveAs(sfd.FileName);
                     MessageBox.Show("Файл Excel успешно сформирован!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
-            catch (Exception ex) { MessageBox.Show("Ошибка выгрузки: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error); }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка выгрузки: " + ex.Message, "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
     }
 }
