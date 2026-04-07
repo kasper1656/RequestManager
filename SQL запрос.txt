@@ -1,0 +1,51 @@
+CREATE DATABASE IF NOT EXISTS RequestManager;
+USE RequestManager;
+
+CREATE TABLE IF NOT EXISTS Users (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Username VARCHAR(100) NOT NULL UNIQUE,
+    Password VARCHAR(255) NOT NULL,
+    Name VARCHAR(150) NOT NULL,
+    Role VARCHAR(20) NOT NULL -- 'Admin' или 'User'
+);
+
+CREATE TABLE IF NOT EXISTS Facilities (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(200) NOT NULL,
+    Address VARCHAR(255) NOT NULL,
+    ResponsiblePerson VARCHAR(150) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Services (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(200) NOT NULL,
+    WorkType VARCHAR(150) NOT NULL,
+    DeadlineDays INT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Requests (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    UserId INT NOT NULL,
+    FacilityId INT NOT NULL,
+    
+    ServiceName VARCHAR(200) NOT NULL,
+    WorkType VARCHAR(150) NOT NULL,
+    DeadlineDays INT NOT NULL,
+    
+    Quantity INT NOT NULL,
+    Status VARCHAR(50) DEFAULT 'В очереди',
+    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE,
+    FOREIGN KEY (FacilityId) REFERENCES Facilities(Id) ON DELETE CASCADE
+);
+
+-- ДОБАВЛЕНИЕ СТАРТОВЫХ ДАННЫХ 
+INSERT INTO Users (Username, Password, Name, Role)
+VALUES ('admin', '123', 'Главный Администратор', 'Admin');
+
+INSERT INTO Facilities (Name, Address, ResponsiblePerson)
+VALUES ('Офис №1', 'ул. Ленина 1', 'Петров И.И.');
+
+INSERT INTO Services (Name, WorkType, DeadlineDays)
+VALUES ('Заправка картриджа', 'Ремонт оргтехники', 7);
